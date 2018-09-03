@@ -2,25 +2,11 @@
 
 set -e
 
-###
-# Adjust according to your needs
-
-
-# Where do we live?
 SELF_DIR="$(cd "$(dirname "$0")" && pwd || exit 2)"
 
-# Set this to the alert script if you want to get notified by mail.
-# If left blank, no mail will be sent.
-ALERT_SCRIPT="$SELF_DIR/geliremotealert.sh"
+# shellcheck source=remote/config.sample.sh
+source "$SELF_DIR/config.sh"
 
-# Specify base directory for keys
-DIR_KEYS="$SELF_DIR/keys"
-# Specify base directory for passphrases
-DIR_PASS="$SELF_DIR/pass"
-
-
-# Do not edit below this line
-###
 
 # Parse the request. Using $* for local debugging
 INPUT="$SSH_ORIGINAL_COMMAND"
@@ -42,7 +28,11 @@ err() {
 # helper function to safely retrieve file contents
 get() {
 	[ ! -d "$1" ] && err "directory not found"
-	[ ! -n "$2" ] && err "no file requested"
+	[ ! -n "$2" ] && err "empty request"
+	case $2 in
+		*\.\.*) err "no double dots allowed" ;;
+		*/*) err "no slashes allowed" ;;
+	esac
 	[ ! -r "$1/$2" ] && err "file not found"
 	cat "$1/$2"
 }

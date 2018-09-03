@@ -2,27 +2,18 @@
 
 set -e
 
-###
-# Adjust according to your needs
+SELF_DIR="$(cd "$(dirname "$0")" && pwd || exit 2)"
 
+# shellcheck source=remote/config.sample.sh
+source "$SELF_DIR/config.sh"
 
-# Where does this mail come from?
-FROM="Remote Messenger <noreply@example.com>"
-# Where should the mail go to?
-RCPT="mail@example.com"
-# Define a subject here!
-SUBJ="Remote Alert"
-
-
-# Do not edit below this line
-###
 
 TIME="$(date "+%Y-%m-%d %H-%M-%S")"
 
 {
-    echo "From: $FROM"
-    echo "To: $RCPT"
-    echo "Subject: $SUBJ ($TIME)"
+    echo "From: $MAIL_FROM"
+    echo "To: $MAIL_RCPT"
+    echo "Subject: $MAIL_SUBJ ($TIME)"
     echo "Content-Type: text/plain"
     echo
     echo
