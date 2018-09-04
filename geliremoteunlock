@@ -1,0 +1,147 @@
+#!/bin/sh
+
+# $FreeBSD$
+#
+# PROVIDE: geliremoteunlock
+# REQUIRE: netwait
+# BEFORE: jail
+
+. /etc/rc.subr
+
+name=geliremoteunlock
+rcvar="${name}_enable"
+
+# shellcheck disable=2034
+start_cmd="${name}_start"
+# shellcheck disable=2034
+stop_cmd=":"
+
+load_rc_config "$name"
+: "${rcvar:="NO"}"
+
+
+
+geliremoteunlock_start() {
+    pools="$*"
+    [ -z "$pools" ] && eval "pools=\${""${name}_pools""}"
+
+    ### Helper Functions ###
+
+    __var() {
+        res=""
+        eval "res=\${""${name}_${1}_${2}""}"
+        [ -z "$res" ] && eval "res=\${""${name}_${2}""}"
+        echo "$res"
+    }
+
+    __pull_file() {
+        host="$1"
+        ident="$2"
+        action="$3"
+        fname="$4"
+        tname="$5"
+        info "retrieving $fname from $host"
+        if ! res=$(ssh \
+            "$host" -i "$ident" \
+            -C  "$action $fname" \
+        ); then
+            warn "$action fetch failed"
+        else
+            debug "got $fname from $host - store in $tname"
+            echo "$res" > "$tname"
+        fi
+    }
+
+    __decrypt() {
+        fname="$1"
+        tname="$2"
+        pass="$3"
+        if [ -n "$pass" ]; then
+            info "decrypting $fname"
+            mv "$tname" "${tname}.aes"
+            if ! openssl enc \
+                -aes-256-cbc -a -salt -d \
+                -in "${tname}.aes" \
+                -out "$tname" \
+                -k "$pass" \
+            ; then
+                warn "unable to decrypt" "$fname"
+            fi
+            rm -fP "${tname}.aes"
+        fi
+    }
+
+    ### Main part ###
+
+    for pool in $pools; do
+
+        info "unlocking pool $pool"
+
+        devices="$(__var                "$pool" "devices")"
+
+        keyfile_host="$(__var           "$pool" "keyfile_host")"
+        keyfile_ident="$(__var          "$pool" "keyfile_ident")"
+        keyfile_name="$(__var           "$pool" "keyfile_name")"
+        keyfile_password="$(__var       "$pool" "keyfile_password")"
+
+        passphrase_host="$(__var        "$pool" "passphrase_host")"
+        passphrase_ident="$(__var       "$pool" "passphrase_ident")"
+        passphrase_name="$(__var        "$pool" "passphrase_name")"
+        passphrase_password="$(__var    "$pool" "passphrase_password")"
+
+        keyfile_temp="/tmp/${name}_${pool}_temp.key"
+        passphrase_temp="/tmp/${name}_${pool}_temp.pwd"
+
+
+        __pull_file \
+            "$keyfile_host" "$keyfile_ident" "keyfile" \
+            "$keyfile_name" "$keyfile_temp"
+
+        __decrypt \
+            "$keyfile_name" "$keyfile_temp" "$keyfile_password"
+
+        if [ -n "$passphrase_host" ] && [ -n "$passphrase_ident" ]; then
+            __pull_file \
+                "$passphrase_host" "$passphrase_ident" "passphrase" \
+                "$passphrase_name" "$passphrase_temp"
+
+            __decrypt \
+                "$passphrase_name" "$passphrase_temp" "$passphrase_password"
+        fi
+
+        for device in $devices; do
+            info "unlocking device $device for pool $pool"
+
+            if [ -n "$passphrase_password" ]; then
+                if ! geli attach \
+                    -k "${keyfile_temp}" \
+                    -j "${passphrase_temp}" \
+                    -p "${device}" \
+                ; then
+                    warn "unable to attach $device"
+                fi
+            else
+                if ! geli attach \
+                    -k "${keyfile_temp}" \
+                    -p "${device}" \
+                ; then
+                    warn "unable to attach $device"
+                fi
+            fi
+        done
+
+        debug "deleting $keyfile_temp"
+        rm -fP "$keyfile_temp"
+        debug "deleting $passphrase_temp"
+        rm -fP "$passphrase_temp"
+
+    done
+
+    info "mounting volumes"
+    zfs mount -a
+
+    info "$name done"
+}
+
+
+run_rc_command geliremoteunlock_start "$@"
