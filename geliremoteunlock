@@ -116,7 +116,7 @@ geliremoteunlock_start() {
                 if ! geli attach \
                     -k "${keyfile_temp}" \
                     -j "${passphrase_temp}" \
-                    -p "${device}" \
+                    "${device}" \
                 ; then
                     warn "unable to attach $device"
                 fi
@@ -144,4 +144,4 @@ geliremoteunlock_start() {
 }
 
 
-run_rc_command geliremoteunlock_start "$@"
+run_rc_command "$@"
