@@ -20,19 +20,42 @@ load_rc_config "$name"
 : "${rcvar:="NO"}"
 
 
+__var() {
+    pool="$1"
+    entry="$2"
+    res=""
+    eval "res=\${""${name}_${pool}_${entry}""}"
+    [ -z "$res" ] && eval "res=\${""${name}_${entry}""}"
+    echo "$res"
+}
+
+__in_list() {
+    match="$1"
+    elems="$2"
+    for elem in $elems; do
+        if [ "$match" = "$elem" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
 geliremoteunlock_start() {
-    pools="$*"
-    [ -z "$pools" ] && eval "pools=\${""${name}_pools""}"
+    conf_pools="$(__var "_" "pools")"
+    pools=""
+
+    if [ -z "$*" ]; then
+        pools="$conf_pools"
+    else
+        for arg_pool in "$@"; do
+            if ! __in_list "$arg_pool" "$conf_pools"; then
+                err 1 "$arg_pool is not configured"
+            fi
+        done
+        pools="$*"
+    fi
 
     ### Helper Functions ###
-
-    __var() {
-        res=""
-        eval "res=\${""${name}_${1}_${2}""}"
-        [ -z "$res" ] && eval "res=\${""${name}_${2}""}"
-        echo "$res"
-    }
 
     __pull_file() {
         host="$1"
