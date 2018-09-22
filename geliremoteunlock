@@ -39,6 +39,26 @@ __in_list() {
     done
     return 1
 }
+__is_cmd() {
+    cmd="$1"
+    debug "checking for command $cmd"
+    command -v "$cmd" > /dev/null
+    return $?
+}
+
+__delete() {
+    obj="$1"
+    debug "checking for $obj to remove"
+    if [ -f "$obj" ]; then
+        if __is_cmd "gshred"; then
+            info "shredding $obj"
+            gshred -fxu "$obj"
+        else
+            info "deleting $obj"
+            rm -fP "$obj"
+        fi
+    fi
+}
 
 geliremoteunlock_start() {
     conf_pools="$(__var "_" "pools")"
@@ -90,7 +110,7 @@ geliremoteunlock_start() {
             ; then
                 warn "unable to decrypt" "$fname"
             fi
-            rm -fP "${tname}.aes"
+            __delete "${tname}.aes"
         fi
     }
 
@@ -153,10 +173,8 @@ geliremoteunlock_start() {
             fi
         done
 
-        debug "deleting $keyfile_temp"
-        rm -fP "$keyfile_temp"
-        debug "deleting $passphrase_temp"
-        rm -fP "$passphrase_temp"
+        __delete  "$keyfile_temp"
+        __delete  "$passphrase_temp"
 
     done
 
