@@ -103,10 +103,10 @@ geliremoteunlock_start() {
             info "decrypting $fname"
             mv "$tname" "${tname}.aes"
             if ! openssl enc \
-                -aes-256-cbc -a -salt -d \
+                -aes-256-cbc -a -pbkdf2 -salt -d \
                 -in "${tname}.aes" \
                 -out "$tname" \
-                -k "$pass" \
+                -pass "pass:$pass" \
             ; then
                 warn "unable to decrypt" "$fname"
             fi

@@ -27,8 +27,8 @@ Remote
 
 *Server(s) storing the keyfiles and passphrases.*
 
-Create a SSH-Keypair, and place the public part of it into the
-``~/.ssh/authorized_keys`` file.
+Create a SSH-Keypair (without password), and place the public part of it
+into the ``~/.ssh/authorized_keys`` file.
 
 To make things work and narrow down the attack surface if that key gets lost,
 prefix it with the **command** and **restrict** option::
@@ -83,7 +83,7 @@ Finally create the zpool and zfs volumes inside it::
 
     zpool create tank /dev/gpt/tank.eli
 
-This zpool should now be mounted as ``/tank``.
+The zpool should now be mounted as ``/tank``.
 
 
 Keys & Passphrases
@@ -97,17 +97,21 @@ Write your passphrase into a textfile (without newline at the end) into
 
 Optional, but very recommended - encrypt the key and passphrase files::
 
-    openssl enc -aes-256-cbc -a -salt \
+    openssl enc -aes-256-cbc -a -pbkdf2 -salt \
         -in /root/keys/tank.key \
         -out /root/keys/tank.key.aes \
-        -k "7179227046a1cdc8bb0e9a81523a6822"
+        -pass "pass:f1144647f681194a666b1f19c4eb83e1"
 
-    openssl enc -aes-256-cbc -a -salt \
+    openssl enc -aes-256-cbc -a -pbkdf2 -salt \
         -in /root/keys/tank.pass \
         -out /root/keys/tank.pass.aes \
-        -k "46cf04febc44b6e0d956bf034f3d11aa"
+        -pass "pass:f600f3a243d0ce33f7bab4ad16c59e91"
+
 
 The ``*.aes`` files should be uploaded to the remote server(s).
+(``-pass`` is just some random string, created using e.g:
+``printf "tank.key" | md5`` - please be more creative than that!
+You'll need them later, see below)
 
 **NOTE**: ``/root/keys`` is in an unencrypted location!
 After transferring the ``*.aes`` files you should make an offsite backup of
