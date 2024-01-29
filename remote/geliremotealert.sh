@@ -8,7 +8,7 @@ SELF_DIR="$(cd "$(dirname "$0")" && pwd || exit 2)"
 source "$SELF_DIR/config.sh"
 
 
-TIME="$(date "+%Y-%m-%d %H-%M-%S")"
+TIME="$(date -Iseconds)"
 
 {
     echo "From: $MAIL_FROM"
