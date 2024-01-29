@@ -10,8 +10,7 @@ source "$SELF_DIR/config.sh"
 
 # helper function to signal some error and exit
 err() {
-    (>&2 echo "error")
-    [ -n "$*" ] && (>&2 echo "$*")
+    (>&2 echo "error:" "$*")
     exit 1
 }
 # helper function to safely retrieve file contents
@@ -46,7 +45,7 @@ case $COMMAND in
         get "$DIR_PASS" "$FILE"
         ;;
     *)
-        err
+        err "unknown command"
         ;;
 esac
 
