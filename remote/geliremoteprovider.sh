@@ -28,7 +28,7 @@ err() {
 # helper function to safely retrieve file contents
 get() {
     [ ! -d "$1" ] && err "directory not found"
-    [ ! -n "$2" ] && err "empty request"
+    [ -z "$2" ] && err "empty request"
     case $2 in
         *\.\.*) err "no double dots allowed" ;;
         */*) err "no slashes allowed" ;;
