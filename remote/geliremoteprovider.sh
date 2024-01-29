@@ -8,17 +8,6 @@ SELF_DIR="$(cd "$(dirname "$0")" && pwd || exit 2)"
 source "$SELF_DIR/config.sh"
 
 
-# Parse the request. Using $* for local debugging
-INPUT="$SSH_ORIGINAL_COMMAND"
-[ -z "$INPUT" ] && INPUT="$*"
-# Split the request into separate variables
-IFS=' ' read -r COMMAND FILE <<< "$INPUT"
-
-
-# Before doing anything else, send the alert mail (if configured)
-[ -x "$ALERT_SCRIPT" ] && "${ALERT_SCRIPT}"
-
-
 # helper function to signal some error and exit
 err() {
     (>&2 echo "error")
@@ -36,6 +25,17 @@ get() {
     [ ! -r "$1/$2" ] && err "file not found"
     cat "$1/$2"
 }
+
+
+# Parse the request. Using $* for local debugging
+INPUT="$SSH_ORIGINAL_COMMAND"
+[ -z "$INPUT" ] && INPUT="$*"
+# Split the request into separate variables
+IFS=' ' read -r COMMAND FILE <<< "$INPUT"
+
+
+# Before doing anything else, send the alert mail (if configured)
+[ -x "$ALERT_SCRIPT" ] && "${ALERT_SCRIPT}"
 
 # parse known commands
 case $COMMAND in
