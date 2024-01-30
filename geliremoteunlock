@@ -176,10 +176,10 @@ geliremoteunlock_start() {
         __delete  "$keyfile_temp"
         __delete  "$passphrase_temp"
 
-    done
+        info "importing pool $pool"
+        zpool import "$pool"
 
-    info "mounting volumes"
-    zfs mount -a
+    done
 
     info "$name done"
 }
