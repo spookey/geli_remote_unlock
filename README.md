@@ -44,7 +44,7 @@ Fore more information see contents of `remote` folder.
 Install the script itself into `/usr/local/etc/rc.d`:
 
 ```sh
-fetch https://raw.githubusercontent.com/spookey/geli_remote_unlock/main/geliremoteunlock /usr/local/etc/rc.d/
+fetch https://raw.githubusercontent.com/spookey/geli_remote_unlock/main/geliremoteunlock -o /usr/local/etc/rc.d/geliremoteunlock
 chmod +x /usr/local/etc/rc.d/geliremoteunlock
 ```
 
