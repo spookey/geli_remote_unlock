@@ -26,6 +26,10 @@ get() {
 }
 
 
+# before doing anything else, send the alert mail (if configured)
+[ -x "$ALERT_SCRIPT" ] && "$ALERT_SCRIPT" "$*"
+
+
 # split the request into separate variables.
 while IFS=' ' read -r FIRST SECOND TAIL; do
     COMMAND="$FIRST"
@@ -34,10 +38,6 @@ while IFS=' ' read -r FIRST SECOND TAIL; do
 done <<EOF
 $SSH_ORIGINAL_COMMAND
 EOF
-
-
-# Before doing anything else, send the alert mail (if configured)
-[ -x "$ALERT_SCRIPT" ] && "${ALERT_SCRIPT}"
 
 # parse known commands
 case $COMMAND in
