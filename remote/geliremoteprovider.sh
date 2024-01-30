@@ -26,11 +26,14 @@ get() {
 }
 
 
-# Parse the request. Using $* for local debugging
-INPUT="$SSH_ORIGINAL_COMMAND"
-[ -z "$INPUT" ] && INPUT="$*"
-# Split the request into separate variables
-IFS=' ' read -r COMMAND FILE <<< "$INPUT"
+# split the request into separate variables.
+while IFS=' ' read -r FIRST SECOND TAIL; do
+    COMMAND="$FIRST"
+    FILE="$SECOND"
+    [ -n "$TAIL" ] && err "too much arguments"
+done <<EOF
+$SSH_ORIGINAL_COMMAND
+EOF
 
 
 # Before doing anything else, send the alert mail (if configured)
