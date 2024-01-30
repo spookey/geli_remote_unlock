@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -e
 
 SELF_DIR="$(cd "$(dirname "$0")" && pwd || exit 2)"
 
 # shellcheck source=remote/config.sample.sh
-source "$SELF_DIR/config.sh"
+. "$SELF_DIR/config.sh"
 
 
 # helper function to signal some error and exit
