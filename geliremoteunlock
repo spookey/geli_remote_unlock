@@ -9,6 +9,7 @@
 . /etc/rc.subr
 
 name=geliremoteunlock
+# shellcheck disable=2034
 rcvar="${name}_enable"
 
 # shellcheck disable=2034
@@ -17,7 +18,7 @@ start_cmd="${name}_start"
 stop_cmd=":"
 
 load_rc_config "$name"
-: "${rcvar:="NO"}"
+: "${geliremoteunlock_enable:="NO"}"
 
 
 __var() {
