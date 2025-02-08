@@ -128,13 +128,7 @@ them afterwards.
 
 This software needs some configuration inside of `/etc/rc.conf`.
 
-First, enable **netwait** to ensure the network is up and running:
-
-```sh
-netwait_enable="YES"
-```
-
-Then, enable the script itself:
+Enable the script itself:
 
 ```sh
 geliremoteunlock_enable="YES"
